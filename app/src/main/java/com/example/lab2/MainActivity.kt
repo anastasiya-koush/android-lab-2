@@ -2,70 +2,40 @@ package com.example.lab2
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.EditText
+import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 
 
 class MainActivity : ComponentActivity() {
-    private var answer = mutableStateOf("")
+    companion object {
+        const val QUESTION_REQUEST_CODE = 100
+        const val QUESTION_KEY = "QUESTION"
+        const val ANSWER_KEY = "ANSWER"
+    }
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 30.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                var question by remember {
-                    mutableStateOf(intent.getStringExtra(R.string.question.toString()) ?: "")
-                }
+        setContentView(R.layout.main_activity)
+    }
 
-                TextField(
-                    value = question,
-                    onValueChange = { question = it }
-                )
-
-                Spacer(modifier = Modifier.padding(20.dp))
-
-                Text(
-                    text = answer.value ?: "No answer is provided"
-                )
-
-                Spacer(modifier = Modifier.padding(20.dp))
-
-                Button(onClick = {
-                    var intent = Intent(this@MainActivity, SecondActivity::class.java)
-                    intent.putExtra(R.string.question.toString(), question)
-                    startActivityForResult(intent, R.integer.success)
-
-                }) {
-                    Text(text = "OK")
-                }
-            }
-        }
+    fun onQuestionSubmit(view: View) {
+        var question = findViewById<EditText>(R.id.questionEditText).text.toString()
+        var intent = Intent(this@MainActivity, SecondActivity::class.java)
+        intent.putExtra(QUESTION_KEY, question)
+        startActivityForResult(intent, QUESTION_REQUEST_CODE)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        answer.value = data?.getStringExtra(R.string.answer.toString()).toString()
-    }
 
+        if (requestCode === QUESTION_REQUEST_CODE) {
+            if (resultCode === RESULT_OK) {
+                val answer = data?.getStringExtra(ANSWER_KEY).toString()
+                val answerTextView = findViewById<TextView>(R.id.answerTextView)
+                answerTextView.text = answer
+            }
+        }
+    }
 }
